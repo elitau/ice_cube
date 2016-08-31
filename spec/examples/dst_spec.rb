@@ -293,6 +293,17 @@ describe IceCube::Schedule do
     schedule.first(5).should == [t0, t0 + 15*60, t0 + 30*60, t0 + 45*60, t0 + 60*60]
   end
 
+  it "does not conflict with other bordering schedule over DST" do
+    # February 16th in 2010 is a Tuesday
+    start_time = Time.utc(2010, 2, 16, 0, 0, 0)
+    end_time   = Time.utc(2010, 2, 17, 0, 0, 0)
+    schedule1 = IceCube::Schedule.new(start_time, end_time: end_time)
+    schedule1.add_recurrence_rule IceCube::Rule.weekly.day(:tuesday)
 
+    schedule2 = IceCube::Schedule.new(start_time, end_time: end_time)
+    schedule1.add_recurrence_rule IceCube::Rule.weekly.day(:wednesday)
+
+    expect(schedule1).to_not be_conflicts_with(schedule2, Time.utc(2010, 7, 23, 0, 0, 0))
+  end
 
 end
